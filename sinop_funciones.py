@@ -53,7 +53,10 @@ def mapa_base(llat, llon):
     pos1 = ax.get_position() # get the original position
     pos2 = [pos1.x0 - 0.05, pos1.y0 - 0.06,  pos1.width*1.16, pos1.height*1.22]
     ax.set_position(pos2) # set a new position
-
+    ax.text(-79., -21., 'Fuente:\n NOAA - GFS',
+            horizontalalignment='left', verticalalignment='top',
+            fontweight='bold', fontsize=14,
+            transform=ccrs.Geodetic())
     return fig, ax
 
 def legend_temp(ax, x, y, clr, txt, proj):
@@ -133,7 +136,7 @@ def mapa_pp(llat, llon, fecha):
     y = np.squeeze(np.asarray(lat))
     z = np.ma.getdata(ppacc)
     # Suavizamos el campo de PP (estetica ante todo)
-    z1 = ndimage.gaussian_filter(z, sigma=1, order=0)
+    z1 = ndimage.gaussian_filter(z, sigma=1., order=0)
     z1[lndsfc==0.] = np.nan
 
     # Ploteamos el Mapa
@@ -266,7 +269,7 @@ def get_index_lat(fecha,llat,llon):
 
 
 if __name__ == '__main__':
-    mydate='20190308'
+    mydate='20190318'
     l_lat = [-60., -20.]
     l_lon = [-80., -50.]
     mapa_pp(l_lat, l_lon, mydate)
