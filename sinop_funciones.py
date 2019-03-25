@@ -25,7 +25,7 @@ def mapa_base(llat, llon):
     """
 
     l_lat = llat
-    l_lon = np.array(llon) % 360
+    l_lon = np.array(llon) % 360  #Pasamos lon en [-180, 180] a [0, 360]
     # Trabajamos con el SHAPEFILE de IGN para provincias
     fname = './shapefile/Provincias'
     shape_feature = ShapelyFeature(Reader(fname).geometries(),
@@ -47,7 +47,7 @@ def mapa_base(llat, llon):
     gl.ylocator = mticker.FixedLocator(np.linspace(l_lat[0], l_lat[1], 9))
     gl.xformatter = LONGITUDE_FORMATTER
     gl.yformatter = LATITUDE_FORMATTER
-    # Extension del grafico
+    # Extension del mapa
     ax.set_extent([l_lon[0], l_lon[1], l_lat[0], l_lat[1]], crs=proj_lcc)
     # Posicion del eje (desplazamos un poco a la izquierda y más abajo)
     pos1 = ax.get_position() # get the original position
@@ -75,12 +75,15 @@ def legend_temp(ax, x, y, clr, txt, proj):
 
 def mapa_tmax(llat, llon, fecha):
     """
+    Mapa de temperaturas maximas durante la semana:
+    Tmax>40 y 35<Tmin<=40
     """
     fig1, ax1 = mapa_base(llat, llon)
     tmax = extract_var(fecha, llat, llon, 'tmax')
     lndsfc = extract_var(fecha, llat, llon, 'lndsfc')
     i_lat, i_lon, lat, lon = get_index_lat(fecha,llat,llon)
     # Datos para el Mapa
+    # Pasamos lon en [0, 360] a [-180, 180]
     x = ((np.squeeze(np.asarray(lon)) - 180) % 360) - 180
     y = np.squeeze(np.asarray(lat))
     z = np.ma.getdata(tmax) - 273.
@@ -100,6 +103,8 @@ def mapa_tmax(llat, llon, fecha):
 
 def mapa_tmin(llat, llon, fecha):
     """
+    Mapa de temperaturas minimas durante la semana:
+    Tmin<0 y 0<=Tmin<3
     """
     fig1, ax1 = mapa_base(llat, llon)
     tmin = extract_var(fecha, llat, llon, 'tmin')
@@ -126,12 +131,14 @@ def mapa_tmin(llat, llon, fecha):
 
 def mapa_pp(llat, llon, fecha):
     """
+    Acumulado de precipitacion durante la semana
     """
     fig1, ax1 = mapa_base(llat, llon)
     ppacc = extract_var(fecha, llat, llon, 'pp')
     lndsfc = extract_var(fecha, llat, llon, 'lndsfc')
     i_lat, i_lon, lat, lon = get_index_lat(fecha,llat,llon)
     # Datos para el Mapa
+    # Pasamos lon en [0, 360] a [-180, 180]
     x = ((np.squeeze(np.asarray(lon)) - 180) % 360) - 180
     y = np.squeeze(np.asarray(lat))
     z = np.ma.getdata(ppacc)
@@ -157,6 +164,9 @@ def mapa_pp(llat, llon, fecha):
 
 def mapa_temp(llat, llon, fecha):
     """
+    Mapa de temperaturas extremas durante la semana:
+    Tmin<0 y 0<=Tmin<3
+    Tmax>40 y 35<Tmin<=40
     """
     fig1, ax1 = mapa_base(llat, llon)
     tmax = extract_var(fecha, llat, llon, 'tmax')
@@ -200,6 +210,8 @@ def mapa_temp(llat, llon, fecha):
 
 def mapa_landsfc(llat, llon, fecha):
     """
+    Mapa de puntos clasificados como AGUA (=0) o
+    TIERRA (=1)
     """
     fig1, ax1 = mapa_base(llat, llon)
     lndsfc = extract_var(fecha, llat, llon, 'lndsfc')
@@ -269,7 +281,7 @@ def get_index_lat(fecha,llat,llon):
 
 
 if __name__ == '__main__':
-    mydate='20190318'
+    mydate='20190325'
     l_lat = [-60., -20.]
     l_lon = [-80., -50.]
     mapa_pp(l_lat, l_lon, mydate)
