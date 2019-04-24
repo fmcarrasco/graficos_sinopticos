@@ -9,7 +9,7 @@ import cartopy
 import cartopy.crs as ccrs
 import cartopy.feature as cpf
 from cartopy.io.shapereader import Reader
-from cartopy.feature import ShapelyFeature
+from cartopy.io.shapereader import natural_earth
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 
 import matplotlib.pyplot as plt
@@ -28,16 +28,30 @@ def mapa_base(llat, llon):
     l_lon = np.array(llon) % 360  #Pasamos lon en [-180, 180] a [0, 360]
     # Trabajamos con el SHAPEFILE de IGN para provincias
     fname = './shapefile/Provincias'
-    shape_feature = ShapelyFeature(Reader(fname).geometries(),
+    shape_feature = cpf.ShapelyFeature(Reader(fname).geometries(),
                                    ccrs.PlateCarree(), edgecolor='black',
                                    facecolor='None', linewidth=0.5)
+    states_provinces = cpf.NaturalEarthFeature(category='cultural',
+                            name='admin_1_states_provinces_lines',
+                            scale='10m',
+                            facecolor='none')
+    shp = Reader(natural_earth(resolution='10m', category='cultural',
+                               name='admin_1_states_provinces_lines'))
+    countries = shp.records()
+
     # Comenzamos la Figura
     fig = plt.figure(figsize=(6, 8))
     proj_lcc = ccrs.PlateCarree()
     ax = plt.axes(projection=proj_lcc)
     ax.coastlines(resolution='10m')
     ax.add_feature(cpf.BORDERS, linestyle='-')
-    ax.add_feature(shape_feature)
+    #ax.add_feature(states_provinces, edgecolor='gray')
+    for country in countries:
+        if country.attributes['adm0_name'] == 'Argentina':
+            ax.add_geometries( [country.geometry], ccrs.PlateCarree(),
+                                edgecolor='black', facecolor='none',
+                                linewidth=0.7 )
+    #ax.add_feature(shape_feature)
     # Colocamos reticula personalizada
     gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
                       linewidth=0.4, color='gray', alpha=0.7, linestyle=':')
@@ -76,7 +90,7 @@ def legend_temp(ax, x, y, clr, txt, proj):
 def mapa_tmax(llat, llon, fecha):
     """
     Mapa de temperaturas maximas durante la semana:
-    Tmax>40 y 35<Tmin<=40
+    Tmax>40 y 35<Tmax<=40
     """
     fig1, ax1 = mapa_base(llat, llon)
     tmax = extract_var(fecha, llat, llon, 'tmax')
@@ -115,11 +129,13 @@ def mapa_tmin(llat, llon, fecha):
     x = ((np.squeeze(np.asarray(lon)) - 180) % 360) - 180
     y = np.squeeze(np.asarray(lat))
     z = np.ma.getdata(tmin) - 273.
+    # Solo puntos en superficie continental
     z[lndsfc==0.] = np.nan
-    # Ploteamos el Mapa
+    # Preparamos los intervalos y colores a usar
     cMap = c.ListedColormap(['#A880C1', '#D1D5F0', '#ffffff'])
     bounds = np.array([-100., 0., 3., 100.])
     norm = c.BoundaryNorm(boundaries=bounds, ncolors=3)
+    # Ploteamos la variable
     CS = ax1.contourf(x, y, z, levels=bounds, cmap=cMap, norm=norm,
                       transform=ccrs.PlateCarree())
     # Agregamos los datos para la leyenda
@@ -271,21 +287,21 @@ def get_index_lat(fecha,llat,llon):
     flat  = file.variables['lat'][:]
     flon  = file.variables['lon'][:]
 
-    lat = [a for a in flat if (a>=l_lat[0] and a<=l_lat[1])]
-    i_lat = [np.where(flat==l_lat[0])[0][0], np.where(flat==l_lat[1])[0][0]]
-    lon = [a for a in flon if (a>=l_lon[0] and a<=l_lon[1])]
-    i_lon = [np.where(flon==l_lon[0])[0][0], np.where(flon==l_lon[1])[0][0]]
+    lat = [a for a in flat if (a >= l_lat[0] and a <= l_lat[1])]
+    i_lat = [np.where(flat == l_lat[0])[0][0], np.where(flat == l_lat[1])[0][0]]
+    lon = [a for a in flon if (a >= l_lon[0] and a <= l_lon[1])]
+    i_lon = [np.where(flon == l_lon[0])[0][0], np.where(flon == l_lon[1])[0][0]]
 
     file.close()
     return i_lat, i_lon, lat, lon
 
 
 if __name__ == '__main__':
-    mydate='20190325'
+    mydate='20190424'
     l_lat = [-60., -20.]
     l_lon = [-80., -50.]
     mapa_pp(l_lat, l_lon, mydate)
-    mapa_tmax(l_lat, l_lon, mydate)
-    mapa_tmin(l_lat, l_lon, mydate)
-    mapa_temp(l_lat, l_lon, mydate)
+    #mapa_tmax(l_lat, l_lon, mydate)
+    #mapa_tmin(l_lat, l_lon, mydate)
+    #mapa_temp(l_lat, l_lon, mydate)
     #mapa_landsfc(l_lat, l_lon, mydate)
