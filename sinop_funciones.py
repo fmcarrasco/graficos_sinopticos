@@ -4,6 +4,7 @@
 import numpy as np
 import netCDF4
 import scipy.ndimage as ndimage
+import datetime as dt
 
 import cartopy
 import cartopy.crs as ccrs
@@ -112,7 +113,7 @@ def mapa_tmax(llat, llon, fecha):
     legend_temp(ax1, [-60, -60], [-45, -47], ['#a70101', '#FF6002'],
                 ['>40' + u'\u2103', '35 - 40 ' + u'\u2103'],
                 ccrs.PlateCarree())
-    figure_name = 'tmax_' + fecha + '.png'
+    figure_name = 'tmax_05deg_' + fecha + '.png'
     plt.savefig(figure_name, dpi=200)
 
 def mapa_tmin(llat, llon, fecha):
@@ -142,7 +143,7 @@ def mapa_tmin(llat, llon, fecha):
     legend_temp(ax1, [-60, -60], [-45, -47], ['#D1D5F0', '#A880C1'],
                 ['0 - 3 ' + u'\u2103', '< 0' + u'\u2103'],
                 ccrs.PlateCarree())
-    figure_name = 'tmin_' + fecha + '.png'
+    figure_name = 'tmin_05deg_' + fecha + '.png'
     plt.savefig(figure_name, dpi=200)
 
 def mapa_pp(llat, llon, fecha):
@@ -167,14 +168,14 @@ def mapa_pp(llat, llon, fecha):
                              '#E31903', '#7A0B0F'])
     bounds = np.array([0., 1., 20., 50., 100., 150., 1000.])
     norm = c.BoundaryNorm(boundaries=bounds, ncolors=6)
-    CS = ax1.contourf(x, y, z1, levels=bounds, cmap=cMap, norm=norm,
+    CS = ax1.contourf(x, y, z, levels=bounds, cmap=cMap, norm=norm,
                       transform=ccrs.PlateCarree())
     cbaxes = inset_axes(ax1, width="50%", height="2%", loc=4)
     cb = plt.colorbar(CS, cax=cbaxes, orientation='horizontal', drawedges=True)
     cb.ax.xaxis.set_ticks_position('top')
     cb.ax.set_xticklabels(['0', '1', '20', '50', '100', '150', ''],
                           weight='bold', fontsize=13)
-    figure_name = 'ppacum_' + fecha + '.png'
+    figure_name = 'ppacum_05deg_' + fecha + '.png'
     plt.savefig(figure_name, dpi=200)
 
 
@@ -220,7 +221,7 @@ def mapa_temp(llat, llon, fecha):
     legend_temp(ax1, [-60, -60], [-46, -48], ['#D1D5F0', '#A880C1'],
                 ['0 - 3 ' + u'\u2103', '< 0' + u'\u2103'],
                 ccrs.PlateCarree())
-    figure_name = 'TEX_' + fecha + '.png'
+    figure_name = 'TEX_05deg_' + fecha + '.png'
     plt.savefig(figure_name, dpi=200)
 
 
@@ -237,7 +238,7 @@ def mapa_landsfc(llat, llon, fecha):
     y = np.squeeze(np.asarray(lat))
     z = np.ma.getdata(lndsfc)
     CS = ax1.pcolormesh(x, y, z, transform=ccrs.PlateCarree())
-    figure_name = 'lndsfc_' + fecha + '.png'
+    figure_name = 'lndsfc_05deg_' + fecha + '.png'
     plt.savefig(figure_name, dpi=200)
 
 
@@ -294,6 +295,21 @@ def get_index_lat(fecha,llat,llon):
 
     file.close()
     return i_lat, i_lon, lat, lon
+
+
+def get_index_time(fecha):
+    """
+    """
+    url ='https://nomads.ncep.noaa.gov:9090/dods/gfs_0p50/gfs' + fecha +\
+         '/gfs_0p50_00z'
+    file = netCDF4.Dataset(url)
+    aux = file.variables['time'][:]
+    a = file.variables['time'].getncattr('units')
+    c = netCDF4.num2date(aux, units=a)
+    tiempo = [dt.datetime.strptime(str(tp), '%Y-%m-%d %H:%M:%S') for tp in c]
+    file.close()
+
+    return tiempo
 
 
 if __name__ == '__main__':
