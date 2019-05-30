@@ -88,15 +88,15 @@ def legend_temp(ax, x, y, clr, txt, proj):
                  fontweight='bold', fontsize=14, transform=ccrs.Geodetic())
 
 
-def mapa_tmax(llat, llon, fecha):
+def mapa_tmax(file, llat, llon, fecha, figure_name):
     """
     Mapa de temperaturas maximas durante la semana:
     Tmax>40 y 35<Tmax<=40
     """
+    tmax = extract_var(fecha, file, llat, llon, 'tmax')
+    lndsfc = extract_var(fecha, file, llat, llon, 'lndsfc')
+    i_lat, i_lon, lat, lon = get_index_lat(fecha, file, llat, llon)
     fig1, ax1 = mapa_base(llat, llon)
-    tmax = extract_var(fecha, llat, llon, 'tmax')
-    lndsfc = extract_var(fecha, llat, llon, 'lndsfc')
-    i_lat, i_lon, lat, lon = get_index_lat(fecha,llat,llon)
     # Datos para el Mapa
     # Pasamos lon en [0, 360] a [-180, 180]
     x = ((np.squeeze(np.asarray(lon)) - 180) % 360) - 180
@@ -113,18 +113,17 @@ def mapa_tmax(llat, llon, fecha):
     legend_temp(ax1, [-60, -60], [-45, -47], ['#a70101', '#FF6002'],
                 ['>40' + u'\u2103', '35 - 40 ' + u'\u2103'],
                 ccrs.PlateCarree())
-    figure_name = 'tmax_05deg_' + fecha + '.png'
     plt.savefig(figure_name, dpi=200)
 
-def mapa_tmin(llat, llon, fecha):
+def mapa_tmin(file, llat, llon, fecha, figure_name):
     """
     Mapa de temperaturas minimas durante la semana:
     Tmin<0 y 0<=Tmin<3
     """
+    tmin = extract_var(fecha, file, llat, llon, 'tmin')
+    lndsfc = extract_var(fecha, file, llat, llon, 'lndsfc')
+    i_lat, i_lon, lat, lon = get_index_lat(fecha, file, llat, llon)
     fig1, ax1 = mapa_base(llat, llon)
-    tmin = extract_var(fecha, llat, llon, 'tmin')
-    lndsfc = extract_var(fecha, llat, llon, 'lndsfc')
-    i_lat, i_lon, lat, lon = get_index_lat(fecha,llat,llon)
     # Datos para el Mapa
     # de 0-360 a -180 - 180 en Longitud
     x = ((np.squeeze(np.asarray(lon)) - 180) % 360) - 180
@@ -143,17 +142,16 @@ def mapa_tmin(llat, llon, fecha):
     legend_temp(ax1, [-60, -60], [-45, -47], ['#D1D5F0', '#A880C1'],
                 ['0 - 3 ' + u'\u2103', '< 0' + u'\u2103'],
                 ccrs.PlateCarree())
-    figure_name = 'tmin_05deg_' + fecha + '.png'
     plt.savefig(figure_name, dpi=200)
 
-def mapa_pp(llat, llon, fecha):
+def mapa_pp(file, llat, llon, fecha, figure_name):
     """
     Acumulado de precipitacion durante la semana
     """
+    ppacc = extract_var(fecha, file, llat, llon, 'pp')
+    lndsfc = extract_var(fecha, file, llat, llon, 'lndsfc')
+    i_lat, i_lon, lat, lon = get_index_lat(fecha, file, llat, llon)
     fig1, ax1 = mapa_base(llat, llon)
-    ppacc = extract_var(fecha, llat, llon, 'pp')
-    lndsfc = extract_var(fecha, llat, llon, 'lndsfc')
-    i_lat, i_lon, lat, lon = get_index_lat(fecha,llat,llon)
     # Datos para el Mapa
     # Pasamos lon en [0, 360] a [-180, 180]
     x = ((np.squeeze(np.asarray(lon)) - 180) % 360) - 180
@@ -168,29 +166,29 @@ def mapa_pp(llat, llon, fecha):
                              '#E31903', '#7A0B0F'])
     bounds = np.array([0., 1., 20., 50., 100., 150., 1000.])
     norm = c.BoundaryNorm(boundaries=bounds, ncolors=6)
-    CS = ax1.contourf(x, y, z, levels=bounds, cmap=cMap, norm=norm,
+    CS = ax1.contourf(x, y, z1, levels=bounds, cmap=cMap, norm=norm,
                       transform=ccrs.PlateCarree())
     cbaxes = inset_axes(ax1, width="50%", height="2%", loc=4)
     cb = plt.colorbar(CS, cax=cbaxes, orientation='horizontal', drawedges=True)
     cb.ax.xaxis.set_ticks_position('top')
     cb.ax.set_xticklabels(['0', '1', '20', '50', '100', '150', ''],
                           weight='bold', fontsize=13)
-    figure_name = 'ppacum_05deg_' + fecha + '.png'
     plt.savefig(figure_name, dpi=200)
 
 
-def mapa_temp(llat, llon, fecha):
+def mapa_temp(file, llat, llon, fecha, figure_name):
     """
     Mapa de temperaturas extremas durante la semana:
     Tmin<0 y 0<=Tmin<3
     Tmax>40 y 35<Tmin<=40
     """
-    fig1, ax1 = mapa_base(llat, llon)
-    tmax = extract_var(fecha, llat, llon, 'tmax')
-    tmin = extract_var(fecha, llat, llon, 'tmin')
-    lndsfc = extract_var(fecha, llat, llon, 'lndsfc')
-    i_lat, i_lon, lat, lon = get_index_lat(fecha,llat,llon)
+    # Set URL, open the file and extract variables needed.
+    tmax = extract_var(fecha, file, llat, llon, 'tmax')
+    tmin = extract_var(fecha, file, llat, llon, 'tmin')
+    lndsfc = extract_var(fecha, file, llat, llon, 'lndsfc')
+    i_lat, i_lon, lat, lon = get_index_lat(fecha, file, llat, llon)
     # Datos para el Mapa
+    fig1, ax1 = mapa_base(llat, llon)
     # de 0-360 a -180 - 180 en Longitud
     x = ((np.squeeze(np.asarray(lon)) - 180) % 360) - 180
     y = np.squeeze(np.asarray(lat))
@@ -221,44 +219,38 @@ def mapa_temp(llat, llon, fecha):
     legend_temp(ax1, [-60, -60], [-46, -48], ['#D1D5F0', '#A880C1'],
                 ['0 - 3 ' + u'\u2103', '< 0' + u'\u2103'],
                 ccrs.PlateCarree())
-    figure_name = 'TEX_05deg_' + fecha + '.png'
     plt.savefig(figure_name, dpi=200)
 
 
-def mapa_landsfc(llat, llon, fecha):
+def mapa_landsfc(file, llat, llon, fecha, figure_name):
     """
     Mapa de puntos clasificados como AGUA (=0) o
     TIERRA (=1)
     """
-    fig1, ax1 = mapa_base(llat, llon)
-    lndsfc = extract_var(fecha, llat, llon, 'lndsfc')
-    i_lat, i_lon, lat, lon = get_index_lat(fecha,llat,llon)
+    # Set URL, open the file and extract variables needed.
+    lndsfc = extract_var(fecha, file, llat, llon, 'lndsfc')
+    i_lat, i_lon, lat, lon = get_index_lat(fecha, file, llat, llon)
     # Datos para el Mapa
+    fig1, ax1 = mapa_base(llat, llon)
     x = ((np.squeeze(np.asarray(lon)) - 180) % 360) - 180
     y = np.squeeze(np.asarray(lat))
     z = np.ma.getdata(lndsfc)
     CS = ax1.pcolormesh(x, y, z, transform=ccrs.PlateCarree())
-    figure_name = 'lndsfc_05deg_' + fecha + '.png'
     plt.savefig(figure_name, dpi=200)
 
 
-def extract_var(fecha, llat, llon, nomvar):
+def extract_var(fecha, file, llat, llon, nomvar):
     " Devuelve las variables TMAX, TMIN, PPAcc"
     l_lat = llat
     l_lon = np.array(llon) % 360
-    i_lat, i_lon, lat, lon = get_index_lat(fecha,llat,llon)
-
-    # Comenzamos extraccion de variable
-    url ='https://nomads.ncep.noaa.gov:9090/dods/gfs_0p50/gfs' + fecha +\
-         '/gfs_0p50_00z'
-    file = netCDF4.Dataset(url)
+    i_lat, i_lon, lat, lon = get_index_lat(fecha, file, llat, llon)
     if nomvar == 'tmax':
         tmax2m = file.variables['tmax2m'][0:64,i_lat[0]:i_lat[1]+1,
                                           i_lon[0]:i_lon[1]+1]
         r_var = np.ma.max(tmax2m, axis=0)
         del(tmax2m)
     elif nomvar == 'tmin':
-        tmin2m = file.variables['tmax2m'][0:64,i_lat[0]:i_lat[1]+1,
+        tmin2m = file.variables['tmin2m'][0:64,i_lat[0]:i_lat[1]+1,
                                           i_lon[0]:i_lon[1]+1]
         r_var = np.ma.min(tmin2m, axis=0)
         del(tmin2m)
@@ -271,20 +263,16 @@ def extract_var(fecha, llat, llon, nomvar):
     elif nomvar == 'lndsfc':
         r_var = file.variables['landsfc'][0,i_lat[0]:i_lat[1]+1,
                                           i_lon[0]:i_lon[1]+1]
-    file.close()
 
     return r_var
 
-def get_index_lat(fecha,llat,llon):
+def get_index_lat(fecha, file, llat, llon):
     """
     Get the index values for lat and lon to extract in requested square of data.
     """
 
     l_lat = llat
     l_lon = np.array(llon) % 360
-    url ='https://nomads.ncep.noaa.gov:9090/dods/gfs_0p50/gfs' + fecha +\
-         '/gfs_0p50_00z'
-    file = netCDF4.Dataset(url)
     flat  = file.variables['lat'][:]
     flon  = file.variables['lon'][:]
 
@@ -293,31 +281,45 @@ def get_index_lat(fecha,llat,llon):
     lon = [a for a in flon if (a >= l_lon[0] and a <= l_lon[1])]
     i_lon = [np.where(flon == l_lon[0])[0][0], np.where(flon == l_lon[1])[0][0]]
 
-    file.close()
+    del(flat)
+    del(flon)
+
     return i_lat, i_lon, lat, lon
 
 
-def get_index_time(fecha):
+def get_index_time(file, fecha):
     """
     """
-    url ='https://nomads.ncep.noaa.gov:9090/dods/gfs_0p50/gfs' + fecha +\
-         '/gfs_0p50_00z'
-    file = netCDF4.Dataset(url)
     aux = file.variables['time'][:]
     a = file.variables['time'].getncattr('units')
     c = netCDF4.num2date(aux, units=a)
     tiempo = [dt.datetime.strptime(str(tp), '%Y-%m-%d %H:%M:%S') for tp in c]
-    file.close()
 
     return tiempo
 
 
 if __name__ == '__main__':
-    mydate='20190424'
+    mydate='20190530'
     l_lat = [-60., -20.]
     l_lon = [-80., -50.]
-    mapa_pp(l_lat, l_lon, mydate)
-    #mapa_tmax(l_lat, l_lon, mydate)
-    #mapa_tmin(l_lat, l_lon, mydate)
-    #mapa_temp(l_lat, l_lon, mydate)
-    #mapa_landsfc(l_lat, l_lon, mydate)
+    ofolder = 'e:/python/graficos_sinopticos/'
+    #########################################################################
+    # Graficos en 0.5 grados
+    url ='https://nomads.ncep.noaa.gov:9090/dods/gfs_0p50/gfs' + mydate +\
+         '/gfs_0p50_00z'
+    file = netCDF4.Dataset(url)
+    nomfig = ofolder + 'PPACUM_05deg_' + mydate + '.png'
+    mapa_pp(file, l_lat, l_lon, mydate, nomfig)
+    nomfig = ofolder + 'TEX_05deg_' + mydate + '.png'
+    mapa_temp(file, l_lat, l_lon, mydate, nomfig)
+    file.close()
+    #########################################################################
+    # Graficos en 0.25 grados
+    url ='https://nomads.ncep.noaa.gov:9090/dods/gfs_0p25/gfs' + mydate +\
+         '/gfs_0p25_00z'
+    file = netCDF4.Dataset(url)
+    nomfig = ofolder + 'PPACUM_025deg_' + mydate + '.png'
+    mapa_pp(file, l_lat, l_lon, mydate, nomfig)
+    nomfig = ofolder + 'TEX_025deg_' + mydate + '.png'
+    mapa_temp(file, l_lat, l_lon, mydate, nomfig)
+    file.close()
