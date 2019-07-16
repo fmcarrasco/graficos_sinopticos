@@ -160,7 +160,7 @@ def mapa_pp(file, llat, llon, fecha, figure_name):
     # Suavizamos el campo de PP (estetica ante todo)
     z1 = ndimage.gaussian_filter(z, sigma=1., order=0)
     z1[lndsfc==0.] = np.nan
-
+    print(np.nanmax(z1))
     # Ploteamos el Mapa
     cMap = c.ListedColormap(['#ffffff', '#fffaaa', '#959392', '#5BC5F5',
                              '#E31903', '#7A0B0F'])
@@ -256,10 +256,11 @@ def extract_var(fecha, file, llat, llon, nomvar):
         del(tmin2m)
     elif nomvar == 'pp':
         # Precipitacion por 7 dias 2 --> 58 (datos cada 3 horas)
-        ppinit = file.variables['apcpsfc'][2:58,i_lat[0]:i_lat[1]+1,
+        ppinit = file.variables['apcpsfc'][58,i_lat[0]:i_lat[1]+1,
                                            i_lon[0]:i_lon[1]+1]
-        r_var = np.ma.sum(ppinit, axis=0)
-        del(ppinit)
+        #r_var = np.ma.sum(ppinit, axis=0)
+        r_var = ppinit
+        #del(ppinit)
     elif nomvar == 'lndsfc':
         r_var = file.variables['landsfc'][0,i_lat[0]:i_lat[1]+1,
                                           i_lon[0]:i_lon[1]+1]
@@ -299,12 +300,18 @@ def get_index_time(file, fecha):
 
 
 if __name__ == '__main__':
-    mydate='20190530'
+    import os
+    #
+    mydate='20190715'
     l_lat = [-60., -20.]
     l_lon = [-80., -50.]
-    ofolder = 'e:/python/graficos_sinopticos/'
+    ofolder = 'e:/python/graficos_sinopticos/'+ mydate +'_05deg/'
+    ofolder0 = 'e:/python/graficos_sinopticos/'+ mydate +'_025deg/'
     #########################################################################
+    os.makedirs(ofolder, exist_ok=True)
+    os.makedirs(ofolder0, exist_ok=True)
     # Graficos en 0.5 grados
+    print('--- Graficando GFS con 0.5 grados de resolucion ---')
     url ='https://nomads.ncep.noaa.gov:9090/dods/gfs_0p50/gfs' + mydate +\
          '/gfs_0p50_00z'
     file = netCDF4.Dataset(url)
@@ -312,14 +319,19 @@ if __name__ == '__main__':
     mapa_pp(file, l_lat, l_lon, mydate, nomfig)
     nomfig = ofolder + 'TEX_05deg_' + mydate + '.png'
     mapa_temp(file, l_lat, l_lon, mydate, nomfig)
+    #nomfig = ofolder + 'LANDSFC_05deg_' + mydate + '.png'
+    #mapa_landsfc(file, l_lat, l_lon, mydate, nomfig)
     file.close()
     #########################################################################
     # Graficos en 0.25 grados
+    print('--- Graficando GFS con 0.25 grados de resolucion ---')
     url ='https://nomads.ncep.noaa.gov:9090/dods/gfs_0p25/gfs' + mydate +\
          '/gfs_0p25_00z'
     file = netCDF4.Dataset(url)
-    nomfig = ofolder + 'PPACUM_025deg_' + mydate + '.png'
+    nomfig = ofolder0 + 'PPACUM_025deg_' + mydate + '.png'
     mapa_pp(file, l_lat, l_lon, mydate, nomfig)
-    nomfig = ofolder + 'TEX_025deg_' + mydate + '.png'
+    nomfig = ofolder0 + 'TEX_025deg_' + mydate + '.png'
     mapa_temp(file, l_lat, l_lon, mydate, nomfig)
+    # nomfig = ofolder0 + 'LANDSFC_025deg_' + mydate + '.png'
+    # mapa_landsfc(file, l_lat, l_lon, mydate, nomfig)
     file.close()
