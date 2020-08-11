@@ -52,7 +52,7 @@ def mapa_base(llat, llon):
             ax.add_geometries( [country.geometry], ccrs.PlateCarree(),
                                 edgecolor='black', facecolor='none',
                                 linewidth=0.7 )
-    #ax.add_feature(shape_feature)
+    # ax.add_feature(shape_feature)
     # Colocamos reticula personalizada
     gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
                       linewidth=0.4, color='gray', alpha=0.7, linestyle=':')
@@ -144,11 +144,14 @@ def mapa_tmin(file, llat, llon, fecha, figure_name):
                 ccrs.PlateCarree())
     plt.savefig(figure_name, dpi=200)
 
-def mapa_pp(file, llat, llon, fecha, figure_name):
+def mapa_pp(file, llat, llon, fecha, figure_name, opt):
     """
     Acumulado de precipitacion durante la semana
     """
-    ppacc = extract_var(fecha, file, llat, llon, 'pp')
+    if opt == 1:
+        ppacc = extract_var(fecha, file, llat, llon, 'pp')
+    elif opt == 2:
+        ppacc = extract_var(fecha, file, llat, llon, 'pp2')
     lndsfc = extract_var(fecha, file, llat, llon, 'lndsfc')
     i_lat, i_lon, lat, lon = get_index_lat(fecha, file, llat, llon)
     fig1, ax1 = mapa_base(llat, llon)
@@ -261,6 +264,12 @@ def extract_var(fecha, file, llat, llon, nomvar):
         #r_var = np.ma.sum(ppinit, axis=0)
         r_var = ppinit
         #del(ppinit)
+    elif nomvar == 'pp2':
+        # Precipitacion por 7 dias 2 --> 58 (datos cada 3 horas)
+        ppinit = file.variables['apcpsfc'][2:58,i_lat[0]:i_lat[1]+1,
+                                           i_lon[0]:i_lon[1]+1]
+        r_var = np.ma.sum(ppinit, axis=0)
+        del(ppinit)
     elif nomvar == 'lndsfc':
         r_var = file.variables['landsfc'][0,i_lat[0]:i_lat[1]+1,
                                           i_lon[0]:i_lon[1]+1]
@@ -302,7 +311,7 @@ def get_index_time(file, fecha):
 if __name__ == '__main__':
     import os
     #
-    mydate='20190715'
+    mydate = '20200811'
     l_lat = [-60., -20.]
     l_lon = [-80., -50.]
     ofolder = 'e:/python/graficos_sinopticos/'+ mydate +'_05deg/'
@@ -312,24 +321,28 @@ if __name__ == '__main__':
     os.makedirs(ofolder0, exist_ok=True)
     # Graficos en 0.5 grados
     print('--- Graficando GFS con 0.5 grados de resolucion ---')
-    url ='https://nomads.ncep.noaa.gov:9090/dods/gfs_0p50/gfs' + mydate +\
+    #url ='https://nomads.ncep.noaa.gov:9090/dods/gfs_0p50/gfs' + mydate +\
+    #     '/gfs_0p50_00z'
+    url = 'http://nomads.ncep.noaa.gov/dods/gfs_0p50/gfs' + mydate +\
          '/gfs_0p50_00z'
     file = netCDF4.Dataset(url)
     nomfig = ofolder + 'PPACUM_05deg_' + mydate + '.png'
-    mapa_pp(file, l_lat, l_lon, mydate, nomfig)
+    mapa_pp(file, l_lat, l_lon, mydate, nomfig, 1)
     nomfig = ofolder + 'TEX_05deg_' + mydate + '.png'
     mapa_temp(file, l_lat, l_lon, mydate, nomfig)
-    #nomfig = ofolder + 'LANDSFC_05deg_' + mydate + '.png'
-    #mapa_landsfc(file, l_lat, l_lon, mydate, nomfig)
+    # nomfig = ofolder + 'LANDSFC_05deg_' + mydate + '.png'
+    # mapa_landsfc(file, l_lat, l_lon, mydate, nomfig)
     file.close()
     #########################################################################
     # Graficos en 0.25 grados
     print('--- Graficando GFS con 0.25 grados de resolucion ---')
-    url ='https://nomads.ncep.noaa.gov:9090/dods/gfs_0p25/gfs' + mydate +\
+    #url ='https://nomads.ncep.noaa.gov:9090/dods/gfs_0p25/gfs' + mydate +\
+    #     '/gfs_0p25_00z'
+    url = 'http://nomads.ncep.noaa.gov/dods/gfs_0p25/gfs' + mydate +\
          '/gfs_0p25_00z'
     file = netCDF4.Dataset(url)
     nomfig = ofolder0 + 'PPACUM_025deg_' + mydate + '.png'
-    mapa_pp(file, l_lat, l_lon, mydate, nomfig)
+    mapa_pp(file, l_lat, l_lon, mydate, nomfig, 1)
     nomfig = ofolder0 + 'TEX_025deg_' + mydate + '.png'
     mapa_temp(file, l_lat, l_lon, mydate, nomfig)
     # nomfig = ofolder0 + 'LANDSFC_025deg_' + mydate + '.png'

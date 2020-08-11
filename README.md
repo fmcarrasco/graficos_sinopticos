@@ -5,3 +5,4 @@ Este proyecto permite: <br />
 -Calcular max y min entre el dia y hora del archivo hasta 7 dias mas <br />
 -calcular acumulado de precipitacion en superficie hasta 7 dias <br />
 -Graficar en un mapa sobre sur de Sudamerica <br />
+-Las figuras de salida se guardan en e:/python/graficos_sinopticos <br />
