@@ -28,10 +28,10 @@ def mapa_base(llat, llon):
     l_lat = llat
     l_lon = np.array(llon) % 360  #Pasamos lon en [-180, 180] a [0, 360]
     # Trabajamos con el SHAPEFILE de IGN para provincias
-    fname = './shapefile/Provincias'
-    shape_feature = cpf.ShapelyFeature(Reader(fname).geometries(),
-                                   ccrs.PlateCarree(), edgecolor='black',
-                                   facecolor='None', linewidth=0.5)
+    #fname = './shapefile/Provincias'
+    #shape_feature = cpf.ShapelyFeature(Reader(fname).geometries(),
+    #                               ccrs.PlateCarree(), edgecolor='black',
+    #                               facecolor='None', linewidth=0.5)
     states_provinces = cpf.NaturalEarthFeature(category='cultural',
                             name='admin_1_states_provinces_lines',
                             scale='10m',
@@ -207,6 +207,7 @@ def mapa_temp(file, llat, llon, fecha, figure_name):
     norm1 = c.BoundaryNorm(boundaries=bounds1, ncolors=3)
     CS1 = ax1.contourf(x, y, z1, levels=bounds1, cmap=cMap1, norm=norm1,
                        transform=ccrs.PlateCarree())
+    #CS1 = ax1.pcolormesh(x, y, z1, cmap=cMap1, norm=norm1, transform=ccrs.PlateCarree())
     # Ploteamos el Mapa de Tmax
     # Consideramos un "Blanco" con alpha = 0 para que sea transparente (TUPLA)
     cMap2 = c.ListedColormap([(1,1,1,0.), '#FF6002', '#a70101'])
@@ -214,6 +215,7 @@ def mapa_temp(file, llat, llon, fecha, figure_name):
     norm2 = c.BoundaryNorm(boundaries=bounds2, ncolors=3)
     CS2 = ax1.contourf(x, y, z2, levels=bounds2, cmap=cMap2, norm=norm2,
                        transform=ccrs.PlateCarree())
+    #CS2 = ax1.pcolormesh(x, y, z2, cmap=cMap2, norm=norm2, transform=ccrs.PlateCarree())
     # Leyenda TMAX
     legend_temp(ax1, [-60, -60], [-41, -43], ['#a70101', '#FF6002'],
                 ['>40' + u'\u2103', '35 - 40 ' + u'\u2103'],
@@ -311,20 +313,20 @@ def get_index_time(file, fecha):
 if __name__ == '__main__':
     import os
     #
-    mydate = '20200811'
+    mydate = '20211015'
     l_lat = [-60., -20.]
     l_lon = [-80., -50.]
-    ofolder = 'e:/python/graficos_sinopticos/'+ mydate +'_05deg/'
-    ofolder0 = 'e:/python/graficos_sinopticos/'+ mydate +'_025deg/'
+    ofolder = 'd:/python/graficos_sinopticos/'+ mydate +'_05deg/'
+    ofolder0 = 'd:/python/graficos_sinopticos/'+ mydate +'_025deg/'
     #########################################################################
     os.makedirs(ofolder, exist_ok=True)
     os.makedirs(ofolder0, exist_ok=True)
     # Graficos en 0.5 grados
     print('--- Graficando GFS con 0.5 grados de resolucion ---')
-    #url ='https://nomads.ncep.noaa.gov:9090/dods/gfs_0p50/gfs' + mydate +\
-    #     '/gfs_0p50_00z'
-    url = 'http://nomads.ncep.noaa.gov/dods/gfs_0p50/gfs' + mydate +\
+    url ='http://nomads.ncep.noaa.gov:80/dods/gfs_0p50/gfs' + mydate +\
          '/gfs_0p50_00z'
+    #url = 'http://nomads.ncep.noaa.gov:80/dods/gfs_0p50/gfs' + mydate +\
+    #     '/gfs_0p50_00z'
     file = netCDF4.Dataset(url)
     nomfig = ofolder + 'PPACUM_05deg_' + mydate + '.png'
     mapa_pp(file, l_lat, l_lon, mydate, nomfig, 1)

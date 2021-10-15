@@ -40,7 +40,9 @@ def extraer_variable(file, fecha, nomvar, llat, llon):
         # Leemos la variable
         ppinit = file.variables['apcpsfc'][:, i_lat[0]:i_lat[1]+1,
                                            i_lon[0]:i_lon[1]+1]
-        d0 = tiempos[4]  # --> Initial day at 12UTC (=9 Local Time)
+        i1 = np.min(np.where(np.array([a.hour for a in tiempos])==12))
+        # primer tiempo que inicia a las 12Z
+        d0 = tiempos[i1]  # --> Initial day at 12UTC (=9 Local Time)
 
         for dia in np.arange(0, ndays):
             di = d0 + dt.timedelta(days=int(dia))
@@ -161,7 +163,7 @@ def plot_precip_daily(file, llat, llon, fecha, prefix):
                               weight='bold', fontsize=13)
         fig_name = prefix + fdates[t].strftime('%Y%m%d') + '.png'
         plt.savefig(fig_name, dpi=200)
-        ax1.clear()
+        plt.close(fig1)
 
 
 def plot_temp_daily(file, llat, llon, fecha, prefix):
@@ -230,8 +232,8 @@ def plot_temp_daily(file, llat, llon, fecha, prefix):
         cb.ax.yaxis.get_ticklabels()[-1].set_visible(False)
         fig_name = prefix[1] + fdates[t].strftime('%Y%m%d') + '.png'
         fig2.savefig(fig_name, dpi=200)
-        ax1.clear()
-        ax2.clear()
+        plt.close(fig1)
+        plt.close(fig2)
 
 
 def plot_wind_daily(file, llat, llon, fecha, prefix):
@@ -261,7 +263,7 @@ def plot_wind_daily(file, llat, llon, fecha, prefix):
         cb.ax.yaxis.set_ticks_position('left')
         fig_name = prefix + fdates[t].strftime('%Y%m%d%H') + '.png'
         fig.savefig(fig_name, dpi=200)
-        ax.clear()
+        plt.close(fig)
 
 
 def plot_precip_hourly(file, llat, llon, fecha, prefix):
@@ -273,8 +275,6 @@ def plot_precip_hourly(file, llat, llon, fecha, prefix):
     lon, lat, pphour, fdates = extract_pphour(file, fecha, llat, llon)
     # Shape:(7,Lat,Lon)
     lndsfc = extract_var(fecha, file, llat, llon, 'lndsfc')
-    # Datos para el Mapa
-    fig1, ax1 = mapa_base(llat, llon)
     # de 0-360 a -180 - 180 en Longitud
     x = ((np.squeeze(np.asarray(lon)) - 180) % 360) - 180
     y = np.squeeze(np.asarray(lat))
@@ -283,6 +283,8 @@ def plot_precip_hourly(file, llat, llon, fecha, prefix):
     bounds = np.array([0., 1., 10., 20., 50., 100., 150., 1000.])
     norm = colors.BoundaryNorm(boundaries=bounds, ncolors=7)
     for t in np.arange(0, np.shape(pphour)[0]):
+        # Datos para el Mapa
+        fig1, ax1 = mapa_base(llat, llon)
         z = pphour[t, :, :]
         z1 = ndimage.gaussian_filter(z, sigma=1., order=0)
         z1[lndsfc == 0.] = np.nan
@@ -295,12 +297,13 @@ def plot_precip_hourly(file, llat, llon, fecha, prefix):
                               weight='bold', fontsize=13)
         fig_name = prefix + fdates[t].strftime('%Y%m%d%H') + '.png'
         plt.savefig(fig_name, dpi=200)
+        plt.close(fig1)
 
 
 if __name__ == '__main__':
     import os
     #
-    mydate = '20200811'
+    mydate = '20210901'
     l_lat = [-60., -20.]
     l_lon = [-80., -50.]
     ofolder1 = 'e:/python/graficos_sinopticos/' + mydate + '_05deg/'
@@ -308,6 +311,7 @@ if __name__ == '__main__':
     ofolder2 = 'e:/python/graficos_sinopticos/' + mydate + '_025deg/'
     os.makedirs(ofolder2, exist_ok=True)
     # 05 deg
+    '''
     print('--- Graficando GFS con 0.5 grados de resolucion ---')
     url ='https://nomads.ncep.noaa.gov/dods/gfs_0p50/gfs' + mydate +\
          '/gfs_0p50_00z'
@@ -322,6 +326,7 @@ if __name__ == '__main__':
     # prefijo = ofolder1 + 'hora_PP_'
     # plot_precip_hourly(file, l_lat, l_lon, mydate, prefijo)
     file.close()
+    '''
     # 0.25 deg
     print('--- Graficando GFS con 0.25 grados de resolucion ---')
     url ='https://nomads.ncep.noaa.gov/dods/gfs_0p25/gfs' + mydate +\
